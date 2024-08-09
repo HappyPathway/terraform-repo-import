@@ -33,7 +33,7 @@ resource "null_resource" "git_clone_new_repo" {
 
 
   provisioner "local-exec" {
-    command     = "rm .gitignore README.md"
+    command     = "git rm .gitignore README.md"
     working_dir = var.git_repo_path
   }
 
