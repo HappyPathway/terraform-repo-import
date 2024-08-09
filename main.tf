@@ -1,5 +1,9 @@
 resource "null_resource" "git_clone" {
   provisioner "local-exec" {
+    command = "rm ${var.git_repo_path} || echo 'No such file'"
+  }
+
+  provisioner "local-exec" {
     command = "git clone ${var.git_repo_url} ${var.git_repo_path}"
   }
 }
