@@ -26,8 +26,8 @@ variable "repo_topics" {
 
 variable "collaborators" {
   description = "List of collaborators to add to the GitHub repository"
-  type        = list(string)
-  default     = []
+  type        = map(string)
+  default     = {}
 }
 
 variable "admin_teams" {
