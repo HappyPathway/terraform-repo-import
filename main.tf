@@ -42,7 +42,7 @@ resource "null_resource" "git_clone_new_repo" {
   }
 
   depends_on = [
-    module.ghe_runners,
+    module.internal_github_actions,
     null_resource.git_clone
   ]
 }
