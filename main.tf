@@ -31,13 +31,13 @@ module "internal_github_actions" {
 }
 
 resource "null_resource" "git_clone_new_repo" {
-  provisioner "local-exec" {
-    command     = "git remote rm origin"
-    working_dir = var.git_repo_path
-  }
+  # provisioner "local-exec" {
+  #   command     = "git remote rm origin"
+  #   working_dir = var.git_repo_path
+  # }
 
   provisioner "local-exec" {
-    command     = "git remote add origin ${module.internal_github_actions.github_repo.ssh_clone_url}"
+    command     = "git remote add internal ${module.internal_github_actions.github_repo.ssh_clone_url}"
     working_dir = var.git_repo_path
   }
 
@@ -53,7 +53,7 @@ resource "null_resource" "git_clone_new_repo" {
   # }
 
   provisioner "local-exec" {
-    command     = "git push origin main --force"
+    command     = "git push internal main --force"
     working_dir = var.git_repo_path
   }
 
