@@ -31,6 +31,12 @@ resource "null_resource" "git_clone_new_repo" {
     working_dir = var.git_repo_path
   }
 
+
+  provisioner "local-exec" {
+    command     = "rm .gitignore README.md"
+    working_dir = var.git_repo_path
+  }
+
   provisioner "local-exec" {
     command     = "git pull origin main --allow-unrelated-histories"
     working_dir = var.git_repo_path
