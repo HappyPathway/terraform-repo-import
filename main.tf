@@ -6,7 +6,13 @@ resource "null_resource" "git_clone" {
   provisioner "local-exec" {
     command = "git clone ${var.git_repo_url} ${var.git_repo_path}"
   }
+
+  provisioner "local-exec" {
+    command     = "git fetch"
+    working_dir = var.git_repo_path
+  }
 }
+
 
 module "internal_github_actions" {
   source                  = "HappyPathway/repo/github"
