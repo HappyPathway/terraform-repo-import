@@ -10,7 +10,7 @@ module "internal_github_actions" {
   repo_org                = var.repo_org
   name                    = var.repo_name
   github_repo_topics = concat([
-    "github_actions"
+    "github-actions"
   ], var.repo_topics)
   force_name        = true
   github_is_private = false
