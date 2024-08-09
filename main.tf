@@ -57,6 +57,11 @@ resource "null_resource" "git_clone_new_repo" {
     working_dir = var.git_repo_path
   }
 
+  provisioner "local-exec" {
+    command     = "git push --tags internal"
+    working_dir = var.git_repo_path
+  }
+
   depends_on = [
     module.internal_github_actions,
     null_resource.git_clone
