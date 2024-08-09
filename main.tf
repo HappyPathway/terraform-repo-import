@@ -4,7 +4,7 @@ resource "null_resource" "git_clone" {
   }
 }
 
-module "ghe_runners" {
+module "internal_github_actions" {
   source                  = "HappyPathway/repo/github"
   github_repo_description = "Imported External Github Actions Repository"
   repo_org                = var.repo_org
