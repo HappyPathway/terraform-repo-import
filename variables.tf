@@ -1,8 +1,3 @@
-variable "git_repo_url" {
-  description = "The URL of the Git repository to clone"
-  type        = string
-}
-
 variable "git_repo_path" {
   description = "The local path where the Git repository will be cloned"
   type        = string
@@ -34,4 +29,13 @@ variable "admin_teams" {
   description = "List of admin teams for the GitHub repository"
   type        = list(string)
   default     = []
+}
+
+variable "public_repo" {
+  description = "The public GitHub repository to import"
+  type = object({
+    owner = string
+    name  = string
+    token = string
+  })
 }

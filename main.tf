@@ -1,27 +1,25 @@
-resource "null_resource" "git_clone" {
-  provisioner "local-exec" {
-    command = "rm ${var.git_repo_path} || echo 'No such file'"
-  }
-
-  provisioner "local-exec" {
-    command = "git clone ${var.git_repo_url} ${var.git_repo_path}"
-  }
-
-  provisioner "local-exec" {
-    command     = "git fetch"
-    working_dir = var.git_repo_path
-  }
+provider "github" {
+  token = var.public_repo.token # or `GITHUB_TOKEN`
 }
 
+data "github_repository" "public_repo" {
+  full_name = "${var.public_repo.owner}/${var.public_repo.name}"
+}
+
+data "github_ref" "ref" {
+  owner      = var.public_repo.owner
+  repository = var.public_repo.name
+  ref        = "heads/${data.github_repository.public_repo.default_branch}"
+}
 
 module "internal_github_actions" {
   source                  = "HappyPathway/repo/github"
-  github_repo_description = "Imported External Github Actions Repository"
+  github_repo_description = data.github_repository.public_repo.description
   repo_org                = var.repo_org
-  name                    = var.repo_name
+  name                    = data.github_repository.public_repo.name
   github_repo_topics = concat([
     "github-actions"
-  ], var.repo_topics)
+  ], data.github_repository.public_repo.topics)
   force_name        = true
   github_is_private = false
   create_codeowners = false
@@ -30,40 +28,41 @@ module "internal_github_actions" {
   admin_teams       = var.admin_teams
 }
 
-resource "null_resource" "git_clone_new_repo" {
-  # provisioner "local-exec" {
-  #   command     = "git remote rm origin"
-  #   working_dir = var.git_repo_path
-  # }
+resource "null_resource" "git_import" {
+
+  triggers = {
+    sha = data.github_ref.ref.sha
+  }
+
+  provisioner "local-exec" {
+    command = "rm -rf ${path.module}/${var.repo_name} || echo 'No such directory'"
+  }
+
+  provisioner "local-exec" {
+    command = "git clone ${data.github_repository.public_repo.http_clone_url} ${path.module}/${var.repo_name}"
+  }
+
+  provisioner "local-exec" {
+    command     = "git fetch"
+    working_dir = "${path.module}/${var.repo_name}"
+  }
 
   provisioner "local-exec" {
     command     = "git remote add internal ${module.internal_github_actions.github_repo.ssh_clone_url}"
-    working_dir = var.git_repo_path
+    working_dir = "${path.module}/${var.repo_name}"
   }
-
-
-  # provisioner "local-exec" {
-  #   command     = "rm .gitignore README.md || echo 'No such file'"
-  #   working_dir = var.git_repo_path
-  # }
-
-  # provisioner "local-exec" {
-  #   command     = "git pull origin main --allow-unrelated-histories"
-  #   working_dir = var.git_repo_path
-  # }
 
   provisioner "local-exec" {
     command     = "git push internal main --force"
-    working_dir = var.git_repo_path
+    working_dir = "${path.module}/${var.repo_name}"
   }
 
   provisioner "local-exec" {
     command     = "git push --tags internal"
-    working_dir = var.git_repo_path
+    working_dir = "${path.module}/${var.repo_name}"
   }
 
-  depends_on = [
-    module.internal_github_actions,
-    null_resource.git_clone
-  ]
+  provisioner "local-exec" {
+    command = "rm -rf ${path.module}/${var.repo_name}"
+  }
 }
