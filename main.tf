@@ -1,12 +1,10 @@
-provider "github" {
-  token = var.public_repo.token # or `GITHUB_TOKEN`
-}
-
 data "github_repository" "public_repo" {
+  provider  = github.public_repo
   full_name = "${var.public_repo.owner}/${var.public_repo.name}"
 }
 
 data "github_ref" "ref" {
+  provider   = github.public_repo
   owner      = var.public_repo.owner
   repository = var.public_repo.name
   ref        = "heads/${data.github_repository.public_repo.default_branch}"
@@ -26,6 +24,20 @@ module "internal_github_actions" {
   enforce_prs       = false
   collaborators     = var.collaborators
   admin_teams       = var.admin_teams
+  providers = {
+    github = github.internal_repo
+  }
+}
+
+resource "local_file" "script" {
+  filename = "${path.module}/import.sh"
+  content = templatefile("${path.module}/script.tpl", {
+    repo_path               = local.repo_path
+    public_clone_url        = data.github_repository.public_repo.http_clone_url
+    internal_clone_url      = module.internal_github_actions.github_repo.ssh_clone_url
+    internal_default_branch = module.internal_github_actions.github_repo.default_branch
+    cur_dir                 = path.module
+  })
 }
 
 resource "null_resource" "git_import" {
@@ -35,34 +47,8 @@ resource "null_resource" "git_import" {
   }
 
   provisioner "local-exec" {
-    command = "rm -rf ${path.module}/${var.repo_name} || echo 'No such directory'"
+    command = local_file.script.filename
   }
 
-  provisioner "local-exec" {
-    command = "git clone ${data.github_repository.public_repo.http_clone_url} ${path.module}/${var.repo_name}"
-  }
-
-  provisioner "local-exec" {
-    command     = "git fetch"
-    working_dir = "${path.module}/${var.repo_name}"
-  }
-
-  provisioner "local-exec" {
-    command     = "git remote add internal ${module.internal_github_actions.github_repo.ssh_clone_url}"
-    working_dir = "${path.module}/${var.repo_name}"
-  }
-
-  provisioner "local-exec" {
-    command     = "git push internal main --force"
-    working_dir = "${path.module}/${var.repo_name}"
-  }
-
-  provisioner "local-exec" {
-    command     = "git push --tags internal"
-    working_dir = "${path.module}/${var.repo_name}"
-  }
-
-  provisioner "local-exec" {
-    command = "rm -rf ${path.module}/${var.repo_name}"
-  }
+  depends_on = [local_file.script]
 }
