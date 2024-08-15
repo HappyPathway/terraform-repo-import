@@ -1,3 +1,3 @@
 locals {
-  repo_path = "${path.module}/${var.repo_name}"
+  repo_path = "${path.module}/${var.internal_repo.name}"
 }
