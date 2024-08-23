@@ -22,3 +22,9 @@ variable "github_org_teams" {
   type        = list(any)
   default     = []
 }
+
+variable "vulnerability_alerts" {
+  description = "Enable GitHub vulnerability alerts"
+  type        = bool
+  default     = true
+}

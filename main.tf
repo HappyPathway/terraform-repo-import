@@ -33,6 +33,7 @@ module "internal_github_actions" {
   providers = {
     github = github.internal_repo
   }
+  vulnerability_alerts = var.vulnerability_alerts
 }
 
 resource "local_file" "script" {
