@@ -15,9 +15,7 @@ module "internal_github_actions" {
   github_repo_description = data.github_repository.public_repo.description
   repo_org                = var.internal_repo.org
   name                    = var.internal_repo.name
-  github_repo_topics = concat([
-    "github-actions"
-    ],
+  github_repo_topics = concat(
     data.github_repository.public_repo.topics != null ?
     length(data.github_repository.public_repo.topics) > 0 ? data.github_repository.public_repo.topics : []
     : []
